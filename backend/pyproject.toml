@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pingdou-backend"
+version = "0.1.0"
+description = "Backend API for the PingDou pattern generation platform"
+requires-python = ">=3.11"
+dependencies = [
+  "alembic>=1.14,<2",
+  "celery>=5.4,<6",
+  "cryptography>=43,<47",
+  "fastapi>=0.115,<1",
+  "numpy>=1.26,<3",
+  "pillow>=11,<13",
+  "psycopg[binary]>=3.2,<4",
+  "pydantic-settings>=2.7,<3",
+  "PyJWT>=2.10,<3",
+  "python-multipart>=0.0.20,<1",
+  "redis>=5.2,<7",
+  "reportlab>=4.2,<5",
+  "scikit-image>=0.24,<1",
+  "sqlalchemy>=2.0,<3",
+  "uvicorn[standard]>=0.34,<1",
+  "minio>=7.2,<8",
+]
+
+[project.optional-dependencies]
+dev = [
+  "httpx>=0.28,<1",
+  "pytest>=8.3,<9",
+  "pytest-asyncio>=0.24,<1",
+  "pytest-cov>=6,<7",
+  "ruff>=0.9,<1",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-q"
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

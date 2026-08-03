@@ -1,0 +1,1 @@
+"""PingDou backend application."""
