@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Any
 
 from app.core.schemas import AppSchema

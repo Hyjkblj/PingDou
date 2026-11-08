@@ -1,19 +1,24 @@
 services:
-  postgres:
-    image: postgres:16-alpine
+  mysql:
+    image: mysql:8.4
     environment:
-      POSTGRES_DB: pingdou
-      POSTGRES_USER: pingdou
-      POSTGRES_PASSWORD: pingdou_dev
+      MYSQL_DATABASE: pingdou
+      MYSQL_USER: pingdou
+      MYSQL_PASSWORD: pingdou_dev
+      MYSQL_ROOT_PASSWORD: pingdou_root_dev
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - pingdou-pgdata:/var/lib/postgresql/data
+      - pingdou-mysqldata:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pingdou"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u pingdou --password=pingdou_dev --silent"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 20s
 
   redis:
     image: redis:7-alpine
@@ -40,6 +45,6 @@ services:
       - pingdou-minio:/data
 
 volumes:
-  pingdou-pgdata:
+  pingdou-mysqldata:
   pingdou-redis:
   pingdou-minio:

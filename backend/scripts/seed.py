@@ -1,45 +1,26 @@
-"""Seed 数据脚本
+"""Seed the local product, users, palette and one development redemption code."""
 
-写入测试用户、商品、色板和业务码。
-运行方式：python -m scripts.seed
-"""
 import sys
+from datetime import timedelta
 from pathlib import Path
 
-# 添加项目根目录到 Python 路径
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.core.db import SyncSessionLocal, Base, sync_engine
-from app.core.security import generate_redemption_code, hash_redemption_code, encrypt_redemption_code
-from app.domain.models import Product, User, RedemptionCode
-from app.domain.enums import RedemptionCodeStatus
-from datetime import datetime, timedelta, timezone
+from app.core.db import SessionLocal, utcnow
+from app.core.security import encrypt_redemption_code, hash_redemption_code
+from app.domain.enums import OrderStatus, RedemptionCodeStatus
+from app.domain.models import Order, Product, RedemptionCode, User
+from app.palettes.service import ensure_default_palette
 
 
-def utcnow():
-    return datetime.now(timezone.utc)
-
-
-def seed():
-    """写入测试数据"""
-    # 创建表
-    Base.metadata.create_all(sync_engine)
-
-    db = SyncSessionLocal()
+def seed() -> None:
+    db = SessionLocal()
     try:
-        # 测试用户
         user = db.query(User).filter(User.phone == "13800000000").first()
         if not user:
-            user = User(
-                phone="13800000000",
-                phone_masked="138****0000",
-                is_admin=False,
-            )
+            user = User(phone="13800000000", phone_masked="138****0000")
             db.add(user)
             db.flush()
-            print(f"[Seed] 创建测试用户: {user.phone_masked} (ID: {user.id})")
-
-        # 管理员用户
         admin = db.query(User).filter(User.phone == "13900000000").first()
         if not admin:
             admin = User(
@@ -49,10 +30,9 @@ def seed():
             )
             db.add(admin)
             db.flush()
-            print(f"[Seed] 创建管理员用户: {admin.phone_masked} (ID: {admin.id})")
-
-        # 商品
-        product = db.query(Product).filter(Product.name == "AI 拼豆图纸制作兑换码").first()
+        product = db.query(Product).filter(
+            Product.name == "AI 拼豆图纸制作兑换码"
+        ).first()
         if not product:
             product = Product(
                 name="AI 拼豆图纸制作兑换码",
@@ -70,33 +50,49 @@ def seed():
             )
             db.add(product)
             db.flush()
-            print(f"[Seed] 创建商品: {product.name} (ID: {product.id})")
-
-        # 测试业务码（未兑换）
-        existing_code = db.query(RedemptionCode).filter(
-            RedemptionCode.code_hint == "TEST"
+        test_code = "PD-TEST-CODE-FOR-DEV"
+        code_hash = hash_redemption_code(test_code).encode("utf-8")
+        redemption = db.query(RedemptionCode).filter(
+            RedemptionCode.code_hash == code_hash
         ).first()
-        if not existing_code:
-            test_code = "PD-TEST-CODE-FOR-DEV"
-            code_hash = hash_redemption_code(test_code).encode("utf-8")
-            code_ciphertext = encrypt_redemption_code(test_code)
-            rc = RedemptionCode(
-                order_id="00000000-0000-0000-0000-000000000001",
-                code_hash=code_hash,
-                code_ciphertext=code_ciphertext,
-                code_hint="TEST",
-                status=RedemptionCodeStatus.UNREDEEMED,
-                expires_at=utcnow() + timedelta(days=180),
+        if not redemption:
+            order = Order(
+                user_id=user.id,
+                product_id=product.id,
+                product_snapshot={
+                    "name": product.name,
+                    "source_asset_limit": product.source_asset_limit,
+                    "ai_jobs_total": 1,
+                    "ai_candidate_count": product.ai_candidate_count,
+                    "edit_window_hours": product.edit_window_hours,
+                    "download_retention_days": product.download_retention_days,
+                    "code_validity_days": product.code_validity_days,
+                    "export_formats": product.export_formats,
+                },
+                amount_cents=product.price_cents,
+                channel="WECHAT_PAY",
+                status=OrderStatus.PAID,
+                idempotency_key="seed-development-order",
+                paid_at=utcnow(),
             )
-            db.add(rc)
-            print(f"[Seed] 创建测试业务码: {test_code}")
-
+            db.add(order)
+            db.flush()
+            db.add(
+                RedemptionCode(
+                    order_id=order.id,
+                    code_hash=code_hash,
+                    code_ciphertext=encrypt_redemption_code(test_code),
+                    code_hint="DEV",
+                    status=RedemptionCodeStatus.UNREDEEMED,
+                    expires_at=utcnow() + timedelta(days=180),
+                )
+            )
+        ensure_default_palette(db)
         db.commit()
-        print("[Seed] 完成！")
-
-    except Exception as e:
+        print("Seed complete. Login: 13800000000, SMS: 123456")
+        print(f"Development redemption code: {test_code}")
+    except Exception:
         db.rollback()
-        print(f"[Seed] 错误: {e}")
         raise
     finally:
         db.close()

@@ -6,29 +6,27 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.core.config import get_settings
-from app.core.db import Base, engine
+from app.assets.router import router as assets_router
+from app.auth.router import router as auth_router
+from app.auth.router import users_router
+from app.catalog.router import router as catalog_router
 from app.core.errors import install_error_handlers
 from app.core.middleware import install_middleware
-
-from app.auth.router import router as auth_router
-from app.catalog.router import router as catalog_router
-from app.orders.router import router as orders_router
-from app.payments.router import router as payments_router
-from app.redemption.router import router as redemption_router
 from app.entitlements.router import router as entitlements_router
+from app.exports.router import router as exports_router
+from app.imaging.router import router as imaging_router
 from app.jobs.router import router as jobs_router
-
-
-settings = get_settings()
+from app.orders.router import router as orders_router
+from app.palettes.router import router as palettes_router
+from app.patterns.router import router as patterns_router
+from app.payments.router import router as payments_router
+from app.projects.router import router as projects_router
+from app.redemption.router import router as redemption_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """应用生命周期：启动时创建表，关闭时清理连接"""
-    # 开发环境自动建表（生产环境使用 Alembic 迁移）
-    if not settings.is_production:
-        Base.metadata.create_all(engine)
+    """应用生命周期；数据库结构统一由 Alembic 管理。"""
     yield
 
 
@@ -45,12 +43,19 @@ install_error_handlers(app)
 
 # 注册路由
 app.include_router(auth_router, prefix="/api/v1")
+app.include_router(users_router, prefix="/api/v1")
 app.include_router(catalog_router, prefix="/api/v1")
 app.include_router(orders_router, prefix="/api/v1")
 app.include_router(payments_router, prefix="/api/v1")
 app.include_router(redemption_router, prefix="/api/v1")
 app.include_router(entitlements_router, prefix="/api/v1")
 app.include_router(jobs_router, prefix="/api/v1")
+app.include_router(projects_router, prefix="/api/v1")
+app.include_router(assets_router, prefix="/api/v1")
+app.include_router(imaging_router, prefix="/api/v1")
+app.include_router(palettes_router, prefix="/api/v1")
+app.include_router(patterns_router, prefix="/api/v1")
+app.include_router(exports_router, prefix="/api/v1")
 
 
 @app.get("/health")

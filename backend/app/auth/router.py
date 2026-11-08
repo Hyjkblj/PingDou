@@ -18,6 +18,7 @@ from .service import (
 )
 
 router = APIRouter(prefix="/auth", tags=["鉴权"])
+users_router = APIRouter(prefix="/users", tags=["用户"])
 
 
 @router.post("/sms/send")
@@ -38,7 +39,8 @@ def refresh(request: Request, body: RefreshTokenRequest, db: Session = Depends(g
     return envelope(request, result.model_dump(by_alias=True))
 
 
-@router.get("/users/me")
+@router.get("/users/me", include_in_schema=False)
+@users_router.get("/me")
 def users_me(request: Request, user_id: str = Depends(require_auth), db: Session = Depends(get_db)):
     result = get_current_user(db, user_id)
     return envelope(request, result.model_dump(by_alias=True))

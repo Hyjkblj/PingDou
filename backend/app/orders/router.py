@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, Header, Request
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
-from app.core.errors import AppError
 from app.core.middleware import require_auth
 from app.core.responses import envelope
 

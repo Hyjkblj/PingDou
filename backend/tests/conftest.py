@@ -2,13 +2,11 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 from app.core.db import Base, get_db
-from app.core.config import Settings
 from app.domain.models import Product
 from app.main import app
-
 
 # 使用 SQLite 内存数据库进行测试
 TEST_DATABASE_URL = "sqlite:///./test.db"
@@ -88,7 +86,10 @@ def auth_headers(client):
     # 发送验证码
     client.post("/api/v1/auth/sms/send", json={"phone": "13800000000", "scene": "LOGIN"})
     # 登录
-    response = client.post("/api/v1/auth/sms/login", json={"phone": "13800000000", "code": "123456"})
+    response = client.post(
+        "/api/v1/auth/sms/login",
+        json={"phone": "13800000000", "code": "123456"},
+    )
     data = response.json()
     token = data["data"]["accessToken"]
     return {"Authorization": f"Bearer {token}"}

@@ -3,10 +3,11 @@
 处理支付回调、订单状态推进和业务码发放。
 使用 Outbox 模式保证事务一致性。
 """
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.db import utcnow
 from app.core.errors import AppError
 from app.core.security import (
@@ -16,6 +17,8 @@ from app.core.security import (
 )
 from app.domain.enums import OrderStatus, RedemptionCodeStatus
 from app.domain.models import Order, OutboxEvent, RedemptionCode
+
+settings = get_settings()
 
 
 def handle_payment_callback(
@@ -35,6 +38,8 @@ def handle_payment_callback(
     order = db.query(Order).filter(Order.id == order_id).first()
     if not order:
         raise AppError("ORDER_NOT_FOUND", "订单不存在", status_code=404)
+    if order.channel != channel:
+        raise AppError("PAYMENT_CHANNEL_MISMATCH", "支付渠道不一致", status_code=400)
 
     # 验证金额
     if order.amount_cents != amount_cents:
@@ -73,6 +78,8 @@ def handle_payment_callback(
     )
     db.add(outbox)
     db.commit()
+    if settings.job_eager:
+        process_payment_outbox(db, outbox.id)
 
 
 def process_payment_outbox(db: Session, outbox_id: str) -> None:
@@ -119,5 +126,3 @@ def process_payment_outbox(db: Session, outbox_id: str) -> None:
     # 标记 Outbox 已处理
     outbox.processed_at = utcnow()
     db.commit()
-
-    print(f"[FakePayment] 为订单 {order_id} 发放业务码: {code}")

@@ -1,7 +1,6 @@
 from uuid import uuid4
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
 
 from app.core.security import decode_token
 

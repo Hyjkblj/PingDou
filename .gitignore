@@ -9,4 +9,10 @@ htmlcov/
 *.db
 backend/storage/
 backend/.mypy_cache/
-
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+frontend/.env.local
+.claude/settings.local.json

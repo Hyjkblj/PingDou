@@ -14,7 +14,7 @@ dependencies = [
   "fastapi>=0.115,<1",
   "numpy>=1.26,<3",
   "pillow>=11,<13",
-  "psycopg[binary]>=3.2,<4",
+  "pymysql>=1.1,<2",
   "pydantic-settings>=2.7,<3",
   "PyJWT>=2.10,<3",
   "python-multipart>=0.0.20,<1",
@@ -51,3 +51,4 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
+ignore = ["B008"]

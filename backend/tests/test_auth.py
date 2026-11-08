@@ -16,7 +16,10 @@ def test_sms_login(client: TestClient):
     client.post("/api/v1/auth/sms/send", json={"phone": "13800000000", "scene": "LOGIN"})
 
     # 登录
-    response = client.post("/api/v1/auth/sms/login", json={"phone": "13800000000", "code": "123456"})
+    response = client.post(
+        "/api/v1/auth/sms/login",
+        json={"phone": "13800000000", "code": "123456"},
+    )
     assert response.status_code == 200
     data = response.json()
     assert "accessToken" in data["data"]
@@ -27,7 +30,10 @@ def test_sms_login(client: TestClient):
 def test_sms_login_invalid_code(client: TestClient):
     """测试验证码错误"""
     client.post("/api/v1/auth/sms/send", json={"phone": "13800000000", "scene": "LOGIN"})
-    response = client.post("/api/v1/auth/sms/login", json={"phone": "13800000000", "code": "000000"})
+    response = client.post(
+        "/api/v1/auth/sms/login",
+        json={"phone": "13800000000", "code": "000000"},
+    )
     assert response.status_code == 400
     data = response.json()
     assert data["error"]["code"] == "SMS_CODE_INVALID"

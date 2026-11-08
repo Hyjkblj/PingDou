@@ -12,7 +12,6 @@ from app.core.config import get_settings
 from app.core.db import utcnow
 from app.core.errors import AppError
 
-
 settings = get_settings()
 
 

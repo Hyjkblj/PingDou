@@ -1,7 +1,7 @@
 from functools import lru_cache
 
-import redis.asyncio as aioredis
 import redis as sync_redis
+import redis.asyncio as aioredis
 
 from app.core.config import get_settings
 

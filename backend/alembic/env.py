@@ -8,7 +8,7 @@ from app.domain.models import Base  # noqa: F401 - 导入所有模型
 
 config = context.config
 settings = get_settings()
-config.set_main_option("sqlalchemy.url", settings.database_url.replace("+psycopg", ""))
+config.set_main_option("sqlalchemy.url", settings.database_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

@@ -9,7 +9,7 @@ from .schemas import ProductView
 
 def get_current_product(db: Session) -> ProductView:
     """获取当前可购买的商品"""
-    product = db.query(Product).filter(Product.is_active == True).first()
+    product = db.query(Product).filter(Product.is_active.is_(True)).first()
     if not product:
         raise AppError("PRODUCT_UNAVAILABLE", "暂无可购买的商品", status_code=404)
     return ProductView(

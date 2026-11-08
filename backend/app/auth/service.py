@@ -2,9 +2,8 @@
 
 处理短信验证码发送、手机号登录和令牌刷新。
 """
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
@@ -73,7 +72,7 @@ def login_with_sms(db: Session, phone: str, code: str) -> SmsLoginResponse:
         .filter(
             SmsVerification.phone == phone,
             SmsVerification.code == code,
-            SmsVerification.used == False,
+            SmsVerification.used.is_(False),
             SmsVerification.expires_at > utcnow(),
         )
         .order_by(SmsVerification.created_at.desc())

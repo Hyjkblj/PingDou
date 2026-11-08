@@ -2,7 +2,7 @@
 
 处理订单创建、查询和状态管理。遵循幂等性和状态机规则。
 """
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 from sqlalchemy.orm import Session
 
@@ -10,9 +10,6 @@ from app.core.db import utcnow
 from app.core.errors import AppError
 from app.core.security import (
     decrypt_redemption_code,
-    generate_redemption_code,
-    hash_redemption_code,
-    encrypt_redemption_code,
 )
 from app.domain.enums import OrderStatus, RedemptionCodeStatus
 from app.domain.models import Order, Product, RedemptionCode
@@ -35,13 +32,19 @@ def create_order(
         (response, is_new): 响应和是否是新创建的订单
     """
     # 检查幂等键
-    existing = db.query(Order).filter(Order.idempotency_key == idempotency_key).first()
+    existing = db.query(Order).filter(
+        Order.user_id == user_id,
+        Order.idempotency_key == idempotency_key,
+    ).first()
     if existing:
         response = _order_to_create_response(existing)
         return response, False
 
     # 查找商品
-    product = db.query(Product).filter(Product.id == product_id, Product.is_active == True).first()
+    product = db.query(Product).filter(
+        Product.id == product_id,
+        Product.is_active.is_(True),
+    ).first()
     if not product:
         raise AppError("PRODUCT_UNAVAILABLE", "商品不可购买", status_code=400)
 
@@ -53,6 +56,7 @@ def create_order(
             "name": product.name,
             "price_cents": product.price_cents,
             "source_asset_limit": product.source_asset_limit,
+            "ai_jobs_total": 1,
             "ai_candidate_count": product.ai_candidate_count,
             "edit_window_hours": product.edit_window_hours,
             "download_retention_days": product.download_retention_days,

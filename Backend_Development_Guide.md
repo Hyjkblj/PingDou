@@ -20,7 +20,7 @@
 ```mermaid
 flowchart LR
     Client["Web 前端"] --> API["FastAPI API"]
-    API --> PG["PostgreSQL"]
+    API --> DB["MySQL 8.4"]
     API --> Redis["Redis"]
     API --> OSS["OSS / S3 对象存储"]
     API --> Queue["Celery Queue"]
@@ -40,7 +40,7 @@ flowchart LR
 | --- | --- |
 | API | Python + FastAPI + Pydantic |
 | ORM 与迁移 | SQLAlchemy 2 + Alembic |
-| 数据库 | PostgreSQL |
+| 数据库 | MySQL 8.4 |
 | 缓存与分布式锁 | Redis |
 | 异步任务 | Celery |
 | 对象存储 | 阿里云 OSS、腾讯云 COS 或 S3 兼容存储 |
@@ -154,7 +154,7 @@ app/
 
 验收标准：
 
-- 一条命令启动 API、Worker、PostgreSQL、Redis 和 MinIO。
+- 一条命令启动 API、Worker、MySQL、Redis 和 MinIO。
 - 在无第三方账号的情况下完成全部 Fake 流程。
 - OpenAPI 生成结果稳定且可被前端类型生成器使用。
 
@@ -695,7 +695,7 @@ engine_version
 
 ### 20.2 集成测试
 
-- PostgreSQL 事务、行锁和唯一约束。
+- MySQL InnoDB 事务、行锁和唯一约束。
 - Redis 锁和 Celery 重试。
 - MinIO 上传、下载和生命周期。
 - Fake Payment、Fake AI 和 Fake SMS。

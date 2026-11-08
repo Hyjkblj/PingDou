@@ -12,9 +12,12 @@ class Settings(BaseSettings):
     )
 
     env: str = "development"
-    database_url: str = "sqlite:///./pingdou.db"
+    database_url: str = (
+        "mysql+pymysql://pingdou:pingdou_dev@127.0.0.1:3306/"
+        "pingdou?charset=utf8mb4"
+    )
     redis_url: str = "redis://localhost:6379/0"
-    secret_key: str = "development-secret-change-me"
+    secret_key: str = "development-secret-change-me-at-least-32-bytes"
     storage_dir: Path = Path("./storage")
     public_base_url: str = "http://localhost:8000"
     job_eager: bool = True

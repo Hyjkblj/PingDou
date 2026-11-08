@@ -43,7 +43,8 @@ async def events(
                     "progress": job.progress,
                     "stage": job.stage,
                 })
-                event_type = "job.completed" if job.status in ("SUCCEEDED", "FAILED", "CANCELLED") else "job.progress"
+                terminal = job.status in ("SUCCEEDED", "FAILED", "CANCELLED")
+                event_type = "job.completed" if terminal else "job.progress"
                 yield f"event: {event_type}\ndata: {data}\n\n"
                 last_status = job.status
                 if job.status in ("SUCCEEDED", "FAILED", "CANCELLED"):
